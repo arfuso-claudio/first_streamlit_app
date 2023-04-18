@@ -11,10 +11,7 @@ my_data_rows = my_cur.fetchall()
 streamlit.header("The fruit load list contains:")
 streamlit.dataframe(my_data_rows)
 
-add_my_fruit = streamlit.multiselect("Pick some fruits:", list(my_data_rows))
 
-streamlit.write('Thanks for adding', add_my_fruit)
-my_cur.execute("insert into fruit_load_list values ('from streamlist') ")
 
 streamlit.title('My Parents new Healthy Diner')
 
@@ -44,15 +41,23 @@ streamlit.dataframe(fruits_to_show)
 # New section to display Fruityvice API
 
 streamlit.header("Fruityvice Fruit Advice!")
+try:
+  # Select fruit
+  fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
+  if not fruit_choice:
+      streamlit.error('Please select a fruit to get information.') 
+  else:
+    fruityvice_response = requests.get("https://fruityvice.com/api/fruit/" + fruit_choice)
+    # Normalized json
+    fruityvice_normalized = pandas.json_normalize(fruityvice_response.json())
+    # Display json as table
+    streamlit.dataframe(fruityvice_normalized)
+    
+except URLError as e:
+  streamlit.error()
 
-# Select fruit
-fruit_choice = streamlit.text_input('What fruit would you like information about?','Kiwi')
-streamlit.write('The user entered ', fruit_choice)
+add_my_fruit = streamlit.multiselect("Pick some fruits:", list(my_data_rows))
 
-fruityvice_response = requests.get("https://fruityvice.com/api/fruit/" + fruit_choice)
-# streamlit.text(fruityvice_response.json())
+streamlit.write('Thanks for adding', add_my_fruit)
+my_cur.execute("insert into fruit_load_list values ('from streamlist') ")
 
-# Normalized json
-fruityvice_normalized = pandas.json_normalize(fruityvice_response.json())
-# Display json as table
-streamlit.dataframe(fruityvice_normalized)
